@@ -37,6 +37,7 @@ export const AllTaskPriorities: TaskPriority[] = [
 export interface Member {
   id: ID;
   name: string;
+  email: string;
   role: MemberRole;
   avatarUrl?: string;
   createdAt: string; // ISO

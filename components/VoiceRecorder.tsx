@@ -175,7 +175,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ currentVoiceNotes, newVoi
       {(currentVoiceNotes.length > 0 || newVoiceNotes.length > 0) && (
         <ul className="mt-4 space-y-2">
            {currentVoiceNotes.map(note => (
-            <li key={note.id} className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-600 rounded">
+            <li key={note.id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2">
                     <button type="button" onClick={() => playCurrentVoiceNote(note)} className="text-blue-500">
                       {playingNoteId === note.id ? <PauseIcon className="w-5 h-5"/> : <PlayIcon className="w-5 h-5"/>}

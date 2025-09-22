@@ -38,28 +38,28 @@ const FilterDropdown: React.FC = () => {
         <div className="relative" ref={wrapperRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative px-3 sm:px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                className="relative px-3 sm:px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
                 <div className="flex items-center gap-2">
                     <FilterIcon className="w-4 h-4" />
                     <span className="hidden sm:inline">Filters</span>
                 </div>
-                {isFilterActive && <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-sky-500 rounded-full border-2 border-white dark:border-slate-800"></div>}
+                {isFilterActive && <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-sky-500 rounded-full border-2 border-white dark:border-black"></div>}
             </button>
 
             {isOpen && (
-                <div className="absolute z-10 mt-2 w-72 origin-top-right right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg p-4 space-y-4">
+                <div className="absolute z-10 mt-2 w-72 origin-top-right right-0 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-md shadow-lg p-4 space-y-4">
                     <h3 className="text-lg font-semibold">Filter Tasks</h3>
                     <input
                         type="text"
                         placeholder="Search tasks..."
-                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
                         value={filters.searchTerm}
                         onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
                     />
                     
                     <select 
-                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
                         value={filters.responsibleId || ''}
                         onChange={(e) => handleFilterChange('responsibleId', e.target.value || undefined)}
                     >
@@ -70,7 +70,7 @@ const FilterDropdown: React.FC = () => {
                     </select>
 
                     <select
-                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
                         value={filters.assigneeIds[0] || ''}
                         onChange={(e) => handleFilterChange('assigneeIds', e.target.value ? [e.target.value] : [])}
                     >
@@ -81,7 +81,7 @@ const FilterDropdown: React.FC = () => {
                     </select>
 
                     <select
-                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
                         value={filters.dueDate || ''}
                         onChange={(e) => handleFilterChange('dueDate', e.target.value || null)}
                     >
@@ -92,7 +92,7 @@ const FilterDropdown: React.FC = () => {
 
                     <button
                         onClick={handleClearFilters}
-                        className="w-full px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md"
+                        className="w-full px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
                     >
                         Clear All Filters
                     </button>

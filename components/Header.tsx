@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ onAdminPanelClick }) => {
 
     return (
         <>
-            <header className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-lg shadow-sm p-4 flex items-center justify-between gap-4 sticky top-0 z-20 border-b border-slate-200 dark:border-slate-700">
+            <header className="bg-white/70 dark:bg-gray-950/70 backdrop-blur-lg shadow-sm p-4 flex items-center justify-between gap-4 sticky top-0 z-20 border-b border-gray-200 dark:border-gray-800">
                 <div className="flex items-center">
                     <img 
                         src={isDarkMode ? logoDark : logoLight} 
@@ -41,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({ onAdminPanelClick }) => {
                     {currentUser?.role === MemberRole.ADMIN && (
                         <button 
                             onClick={onAdminPanelClick}
-                            className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            className="p-2 text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             aria-label="Open Admin Panel"
                         >
                             <SettingsIcon className="w-6 h-6" />

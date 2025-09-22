@@ -38,7 +38,7 @@ const MemberPicker: React.FC<MemberPickerProps> = ({ allMembers, selectedIds, on
         <div className="relative" ref={wrapperRef}>
             <div className="flex flex-wrap gap-2 p-2 border border-gray-300 dark:border-gray-600 rounded-md min-h-[42px]">
                 {selectedMembers.map(member => (
-                    <div key={member.id} className="flex items-center bg-gray-100 dark:bg-gray-600 rounded-full px-2 py-1">
+                    <div key={member.id} className="flex items-center bg-white dark:bg-gray-800 rounded-full px-2 py-1 border border-gray-200 dark:border-gray-700">
                         <Avatar member={member} size="sm" />
                         <span className="text-sm ml-1.5">{member.name}</span>
                         <button type="button" onClick={() => handleDeselect(member.id)} className="ml-1.5 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">

@@ -1,12 +1,12 @@
 import { Member, Task, TaskStatus, MemberRole, TaskPriority } from './types';
 
 export const TEAM_MEMBERS_SEED: Omit<Member, 'id' | 'createdAt' | 'updatedAt'>[] = [
-  { name: 'Alice Johnson', role: MemberRole.ADMIN, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' },
-  { name: 'Bob Williams', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026705d' },
-  { name: 'Charlie Brown', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026706d' },
-  { name: 'Diana Miller', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026707d' },
-  { name: 'Ethan Davis', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026708d' },
-  { name: 'Fiona Garcia', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026709d' },
+  { name: 'Alice Johnson', email: 'alice.j@example.com', role: MemberRole.ADMIN, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' },
+  { name: 'Bob Williams', email: 'bob.w@example.com', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026705d' },
+  { name: 'Charlie Brown', email: 'charlie.b@example.com', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026706d' },
+  { name: 'Diana Miller', email: 'diana.m@example.com', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026707d' },
+  { name: 'Ethan Davis', email: 'ethan.d@example.com', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026708d' },
+  { name: 'Fiona Garcia', email: 'fiona.g@example.com', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026709d' },
 ];
 
 export const TASKS_SEED: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'responsibleId' | 'assigneeIds'>[] = [

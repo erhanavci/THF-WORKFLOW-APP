@@ -25,7 +25,7 @@ const DarkModeSwitch: React.FC = () => {
     return (
         <button
             onClick={cycleTheme}
-            className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            className="p-2 text-gray-500 hover:text-sky-600 dark:text-gray-400 dark:hover:text-sky-400 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             aria-label={getLabel()}
         >
             {getIcon()}

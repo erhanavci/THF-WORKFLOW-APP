@@ -15,7 +15,7 @@ const App: React.FC = () => {
     <ThemeProvider>
       <DndProvider backend={HTML5Backend}>
         <KanbanProvider>
-          <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300">
+          <div className="min-h-screen bg-white dark:bg-black text-black dark:text-gray-200 flex flex-col transition-colors duration-300">
             <Header onAdminPanelClick={() => setIsAdminPanelOpen(true)} />
             <main className="flex-grow p-4 sm:p-6 lg:p-8 overflow-x-auto">
               <Board />

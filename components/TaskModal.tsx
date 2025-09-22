@@ -94,8 +94,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
     }
   }
   
-  const inputStyles = "mt-1 block w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 bg-white dark:bg-slate-700/50";
-  const labelStyles = "block text-sm font-medium text-slate-700 dark:text-slate-300";
+  const inputStyles = "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 bg-white dark:bg-gray-800";
+  const labelStyles = "block text-sm font-medium text-gray-700 dark:text-gray-300";
 
   return (
     <Modal isOpen onClose={onClose} title={task ? 'Edit Task' : 'Create New Task'} className="max-w-4xl">
@@ -132,7 +132,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6 bg-slate-50 dark:bg-slate-800/50 p-6 rounded-lg -m-6 md:m-0">
+          <div className="space-y-6 bg-white dark:bg-black/20 p-6 rounded-lg -m-6 md:m-0">
             <div>
               <label htmlFor="status" className={labelStyles}>Status</label>
               <select id="status" value={status} onChange={(e) => setStatus(e.target.value as TaskStatus)} className={inputStyles}>
@@ -166,8 +166,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
           </div>
         </div>
 
-        <footer className="flex justify-end gap-4 pt-6 border-t border-slate-200 dark:border-slate-700">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-700 bg-white dark:bg-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors">
+        <footer className="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-800">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             Cancel
           </button>
           <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-sky-600 rounded-lg shadow-sm hover:bg-sky-700 transition-colors">

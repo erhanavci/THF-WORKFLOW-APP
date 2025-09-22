@@ -17,6 +17,7 @@ const TeamManagement: React.FC = () => {
 
     const [editingMember, setEditingMember] = useState<Member | null>(null);
     const [newMemberName, setNewMemberName] = useState('');
+    const [newMemberEmail, setNewMemberEmail] = useState('');
     const [newMemberRole, setNewMemberRole] = useState<MemberRole>(MemberRole.MEMBER);
 
     const handleAddMember = (e: React.FormEvent) => {
@@ -25,21 +26,27 @@ const TeamManagement: React.FC = () => {
             showToast('Member name is required.', 'error');
             return;
         }
+        if (!newMemberEmail.trim() || !/^\S+@\S+\.\S+$/.test(newMemberEmail)) {
+            showToast('A valid email is required.', 'error');
+            return;
+        }
         addMember({
             name: newMemberName,
+            email: newMemberEmail,
             role: newMemberRole,
             avatarUrl: `https://i.pravatar.cc/150?u=${crypto.randomUUID()}`,
         });
         setNewMemberName('');
+        setNewMemberEmail('');
         setNewMemberRole(MemberRole.MEMBER);
     };
 
     const handleUpdateMember = () => {
-        if (editingMember && editingMember.name.trim()) {
+        if (editingMember && editingMember.name.trim() && /^\S+@\S+\.\S+$/.test(editingMember.email)) {
             updateMember(editingMember);
             setEditingMember(null);
         } else {
-            showToast('Member name cannot be empty.', 'error');
+            showToast('Member name and a valid email are required.', 'error');
         }
     };
 
@@ -65,13 +72,14 @@ const TeamManagement: React.FC = () => {
                 <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Team Members</h3>
                 <ul className="mt-4 space-y-2 max-h-60 overflow-y-auto pr-2">
                     {members.map(member => (
-                        <li key={member.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md gap-2">
+                        <li key={member.id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded-md gap-2 border border-gray-200 dark:border-gray-700">
                             {editingMember?.id === member.id ? (
                                 <>
                                     <div className="flex-grow flex items-center gap-2">
                                         <Avatar member={member} size="md" />
-                                        <div className="flex-grow">
+                                        <div className="flex-grow space-y-1">
                                             <input type="text" value={editingMember.name} onChange={(e) => handleInputChange('name', e.target.value)} className="block w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm" placeholder="Name" />
+                                            <input type="email" value={editingMember.email} onChange={(e) => handleInputChange('email', e.target.value)} className="block w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm" placeholder="Email" />
                                         </div>
                                     </div>
                                     <div className="w-32 shrink-0">
@@ -91,6 +99,7 @@ const TeamManagement: React.FC = () => {
                                     <Avatar member={member} size="md" />
                                     <div>
                                         <p className="font-semibold">{member.name} {member.id === currentUser?.id && <span className="text-xs text-blue-500">(You)</span>}</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">{member.email}</p>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">{member.role}</p>
                                     </div>
                                 </div>
@@ -116,6 +125,7 @@ const TeamManagement: React.FC = () => {
                 <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Add New Member</h3>
                 <form onSubmit={handleAddMember} className="mt-4 flex flex-col sm:flex-row gap-4">
                     <input type="text" placeholder="Name" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} className="flex-grow px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800" />
+                    <input type="email" placeholder="Email" value={newMemberEmail} onChange={(e) => setNewMemberEmail(e.target.value)} className="flex-grow px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800" />
                     <select
                         value={newMemberRole}
                         onChange={(e) => setNewMemberRole(e.target.value as MemberRole)}
@@ -204,11 +214,11 @@ const Dashboard: React.FC = () => {
          <div>
             <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4">Board Overview</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="p-4 bg-gray-100 dark:bg-gray-700/50 rounded-lg">
+                <div className="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
                     <p className="text-3xl font-bold">{tasks.length}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Total Tasks</p>
                 </div>
-                <div className="p-4 bg-gray-100 dark:bg-gray-700/50 rounded-lg">
+                <div className="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
                     <p className="text-3xl font-bold">{members.length}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">Team Members</p>
                 </div>
@@ -222,7 +232,7 @@ const Dashboard: React.FC = () => {
                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{columnNames[status]}</span>
                                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{tasksByStatus[status]}</span>
                              </div>
-                             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                             <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2.5">
                                  <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: tasks.length > 0 ? `${(tasksByStatus[status] / tasks.length) * 100}%` : '0%' }}></div>
                              </div>
                          </div>
@@ -262,7 +272,7 @@ const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ onClose }) => {
                              <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`px-4 py-2 text-sm font-medium rounded-md text-left w-full ${activeTab === tab.id ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'}`}
+                                className={`px-4 py-2 text-sm font-medium rounded-md text-left w-full ${activeTab === tab.id ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
                              >
                                 {tab.label}
                             </button>

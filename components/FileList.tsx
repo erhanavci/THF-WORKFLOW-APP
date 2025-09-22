@@ -1,9 +1,11 @@
-
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Attachment } from '../types';
 import { formatFileSize, downloadBlob } from '../utils/helpers';
 import { dbGetBlob } from '../services/db';
 import { DB_CONFIG } from '../constants';
+import FilePreviewModal from './FilePreviewModal';
+import { useToast } from '../hooks/useToast';
+
 
 interface FileListProps {
   currentAttachments: Attachment[];
@@ -14,6 +16,9 @@ interface FileListProps {
 }
 
 const FileList: React.FC<FileListProps> = ({ currentAttachments, newAttachments, onNewAttachmentsChange, onCurrentAttachmentsChange, onAttachmentsToRemoveChange }) => {
+  const { showToast } = useToast();
+  const [previewFile, setPreviewFile] = useState<{ name: string; type: string; blob: Blob } | null>(null);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files).map(file => ({file, id: crypto.randomUUID()}));
@@ -37,6 +42,20 @@ const FileList: React.FC<FileListProps> = ({ currentAttachments, newAttachments,
     }
   }
 
+  const handlePreviewCurrent = async (attachment: Attachment) => {
+    const blob = await dbGetBlob(DB_CONFIG.STORES.ATTACHMENTS, attachment.blobKey);
+    if (blob) {
+      setPreviewFile({ name: attachment.fileName, type: attachment.mimeType, blob });
+    } else {
+      showToast('Could not load attachment for preview.', 'error');
+    }
+  };
+
+  const handlePreviewNew = (file: File) => {
+    setPreviewFile({ name: file.name, type: file.type, blob: file });
+  };
+
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Attachments</label>
@@ -57,8 +76,10 @@ const FileList: React.FC<FileListProps> = ({ currentAttachments, newAttachments,
       {(currentAttachments.length > 0 || newAttachments.length > 0) && (
         <ul className="mt-4 space-y-2">
           {currentAttachments.map(att => (
-            <li key={att.id} className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-600 rounded">
-              <span className="truncate">{att.fileName} ({formatFileSize(att.sizeBytes)})</span>
+            <li key={att.id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+              <button type="button" onClick={() => handlePreviewCurrent(att)} className="truncate text-sky-600 dark:text-sky-400 hover:underline text-left" title={`Preview ${att.fileName}`}>
+                {att.fileName} <span className="text-gray-500 dark:text-gray-400 text-xs">({formatFileSize(att.sizeBytes)})</span>
+              </button>
               <div>
                 <button type="button" onClick={() => handleDownload(att)} className="text-blue-500 hover:text-blue-700 mr-2">Download</button>
                 <button type="button" onClick={() => removeCurrentAttachment(att)} className="text-red-500 hover:text-red-700">Remove</button>
@@ -67,12 +88,19 @@ const FileList: React.FC<FileListProps> = ({ currentAttachments, newAttachments,
           ))}
           {newAttachments.map((att, index) => (
             <li key={att.id} className="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/50 rounded">
-              <span className="truncate">{att.file.name} ({formatFileSize(att.file.size)})</span>
+               <button type="button" onClick={() => handlePreviewNew(att.file)} className="truncate text-sky-600 dark:text-sky-400 hover:underline text-left" title={`Preview ${att.file.name}`}>
+                  {att.file.name} <span className="text-gray-500 dark:text-gray-400 text-xs">({formatFileSize(att.file.size)})</span>
+               </button>
               <button type="button" onClick={() => removeNewAttachment(index)} className="text-red-500 hover:text-red-700">Remove</button>
             </li>
           ))}
         </ul>
       )}
+       <FilePreviewModal 
+            isOpen={!!previewFile} 
+            onClose={() => setPreviewFile(null)}
+            file={previewFile}
+        />
     </div>
   );
 };

@@ -17,13 +17,14 @@ const Avatar: React.FC<AvatarProps> = ({ member, size = 'md', responsible = fals
   return (
     <div className="relative group">
       <img
-        className={`${sizeClasses[size]} rounded-full object-cover ring-2 ring-white dark:ring-slate-800 ${responsible ? 'ring-sky-500' : ''}`}
+        className={`${sizeClasses[size]} rounded-full object-cover ring-2 ring-white dark:ring-gray-900 ${responsible ? 'ring-sky-500' : ''}`}
         src={member.avatarUrl}
         alt={member.name}
       />
-      <div className="absolute z-10 bottom-full mb-2 w-max px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none left-1/2 -translate-x-1/2">
+      <div className="absolute z-10 bottom-full mb-2 w-max px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none left-1/2 -translate-x-1/2">
         {member.name}
-        {member.role && <span className="text-slate-400 block">{member.role}</span>}
+        {member.email && <span className="text-gray-400 block text-xs">{member.email}</span>}
+        {member.role && <span className="text-gray-400 block">{member.role}</span>}
       </div>
     </div>
   );
