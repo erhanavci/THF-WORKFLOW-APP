@@ -1,0 +1,7 @@
+{
+  "name": "THF WORKFLOW APP",
+  "description": "A Trello-like Kanban board web application for managing tasks. Features include drag-and-drop functionality, task creation with assignments, file attachments, voice notes, due dates, and persistent storage using IndexedDB.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
