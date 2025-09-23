@@ -21,34 +21,46 @@ const Column: React.FC<ColumnProps> = ({ status, tasks }) => {
         }),
     }), [status, moveTask]);
 
-    const getStatusColor = (s: TaskStatus) => {
+
+    const getStatusStyles = (s: TaskStatus) => {
         switch(s) {
-            case TaskStatus.BACKLOG: return 'bg-gray-400';
-            case TaskStatus.TODO: return 'bg-sky-500';
-            case TaskStatus.IN_PROGRESS: return 'bg-amber-500';
-            case TaskStatus.DONE: return 'bg-emerald-500';
+            case TaskStatus.BACKLOG: return {
+                bg: 'bg-gray-500 dark:bg-gray-600',
+                badgeBg: 'bg-black/20',
+            };
+            case TaskStatus.TODO: return {
+                bg: 'bg-sky-500 dark:bg-sky-600',
+                badgeBg: 'bg-black/20',
+            };
+            case TaskStatus.IN_PROGRESS: return {
+                bg: 'bg-amber-500 dark:bg-amber-600',
+                badgeBg: 'bg-black/20',
+            };
+            case TaskStatus.DONE: return {
+                bg: 'bg-emerald-500 dark:bg-emerald-600',
+                badgeBg: 'bg-black/20',
+            };
         }
     }
 
+    const styles = getStatusStyles(status);
+
     return (
         <div
-            ref={drop}
-            className={`flex flex-col rounded-xl h-full transition-colors duration-200 ${isOver && canDrop ? 'bg-sky-100/50 dark:bg-sky-900/20' : ''}`}
+            ref={drop as any}
+            className={`flex flex-col rounded-xl h-full transition-all duration-200 bg-gray-100 dark:bg-gray-800/50 shadow-sm ${isOver && canDrop ? 'ring-2 ring-sky-500' : 'ring-1 ring-gray-200 dark:ring-gray-700/50'}`}
         >
-            <header className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${getStatusColor(status)}`}></div>
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100">{columnNames[status]}</h3>
-                </div>
-                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700 rounded-full px-2 py-0.5">{tasks.length}</span>
+            <header className={`p-4 flex items-center justify-between rounded-t-xl ${styles.bg}`}>
+                <h3 className="font-semibold text-lg text-white">{columnNames[status]}</h3>
+                <span className={`text-sm font-medium text-white rounded-full px-2.5 py-0.5 ${styles.badgeBg}`}>{tasks.length}</span>
             </header>
             <div className="flex-grow p-2 space-y-4 overflow-y-auto">
                 {tasks.length > 0 ? (
                     tasks.map(task => <TaskCard key={task.id} task={task} />)
                 ) : (
-                    <div className="text-center text-gray-500 dark:text-gray-400 py-10 px-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
-                        <p>No tasks yet.</p>
-                        <p className="text-sm">Drop a task here to add it.</p>
+                    <div className="text-center text-gray-500 dark:text-gray-400 py-10 px-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg m-2">
+                        <p>Henüz görev yok.</p>
+                        <p className="text-sm">Eklemek için bir görevi buraya sürükleyin.</p>
                     </div>
                 )}
             </div>

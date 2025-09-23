@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Task, Member, FilterState, ID, TaskStatus, Attachment, VoiceNote, BoardConfig } from '../types';
-import { dbGetTasks, dbPutTask, dbGetMembers, dbPutMember, dbDeleteTask, dbDeleteMember, dbPutBlob, dbDeleteBlob, dbGetConfig, dbPutConfig, dbClearTasks, dbClearMembers } from '../services/db';
+// FIX: Added dbGetBlob to the import list to resolve undefined errors.
+import { dbGetTasks, dbPutTask, dbGetMembers, dbPutMember, dbDeleteTask, dbDeleteMember, dbPutBlob, dbGetBlob, dbDeleteBlob, dbGetConfig, dbPutConfig, dbClearTasks, dbClearMembers } from '../services/db';
 import { TEAM_MEMBERS_SEED, TASKS_SEED, DB_CONFIG, BOARD_CONFIG_ID, DEFAULT_COLUMN_NAMES } from '../constants';
 import { useToast } from '../hooks/useToast';
 
@@ -10,12 +11,12 @@ interface KanbanContextType {
   filters: FilterState;
   loading: boolean;
   currentUser: Member | null;
-  addTask: (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>, attachments: {file: File, id: string}[], voiceNotes: {blob: Blob, durationMs: number, id: string}[]) => Promise<void>;
+  addTask: (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>, attachments: {file: File, id: string}[], voiceNotes: {blob: Blob, durationMs: number, id: string}[]) => Promise<void>;
   updateTask: (taskData: Task, newAttachments: {file: File, id: string}[], attachmentsToRemove: Attachment[], newVoiceNotes: {blob: Blob, durationMs: number, id: string}[], voiceNotesToRemove: VoiceNote[]) => Promise<void>;
   deleteTask: (taskId: ID) => Promise<void>;
   moveTask: (taskId: ID, newStatus: TaskStatus) => Promise<void>;
   addMember: (memberData: Omit<Member, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateMember: (member: Member) => Promise<void>;
+  updateMember: (member: Member, avatarFile?: File) => Promise<void>;
   deleteMember: (memberId: ID) => Promise<void>;
   setFilters: (filters: FilterState) => void;
   getMemberById: (id: ID) => Member | undefined;
@@ -79,6 +80,7 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
                 assigneeIds: Array.from(new Set(assignees.map(a => a.id))),
                 createdAt: now,
                 updatedAt: now,
+                updatedBy: responsible.id,
             }
         });
         await Promise.all(seededTasks.map(dbPutTask));
@@ -87,7 +89,7 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       setTasks(currentTasks);
     } catch (error) {
       console.error("Failed to initialize data:", error);
-      showToast("Error initializing data.", "error");
+      showToast("Veriler başlatılırken hata oluştu.", "error");
     } finally {
       setLoading(false);
     }
@@ -99,7 +101,11 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   const getMemberById = useCallback((id: ID) => members.find(m => m.id === id), [members]);
 
-  const addTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>, attachments: {file: File, id: string}[], voiceNotes: {blob: Blob, durationMs: number, id: string}[]) => {
+  const addTask = async (taskData: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'updatedBy'>, attachments: {file: File, id: string}[], voiceNotes: {blob: Blob, durationMs: number, id: string}[]) => {
+    if (!currentUser) {
+        showToast("Giriş yapmış kullanıcı yok.", "error");
+        return;
+    }
     const now = new Date().toISOString();
     const newAttachments: Attachment[] = [];
     const newVoiceNotes: VoiceNote[] = [];
@@ -133,14 +139,19 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       voiceNotes: newVoiceNotes,
       createdAt: now,
       updatedAt: now,
+      updatedBy: currentUser.id,
     };
 
     await dbPutTask(newTask);
     setTasks(prev => [...prev, newTask]);
-    showToast("Task created successfully!", "success");
+    showToast("Görev başarıyla oluşturuldu!", "success");
   };
 
   const updateTask = async (taskData: Task, newAttachments: {file: File, id: string}[], attachmentsToRemove: Attachment[], newVoiceNotes: {blob: Blob, durationMs: number, id: string}[], voiceNotesToRemove: VoiceNote[]) => {
+    if (!currentUser) {
+        showToast("Giriş yapmış kullanıcı yok.", "error");
+        return;
+    }
     const now = new Date().toISOString();
     
     await Promise.all(attachmentsToRemove.map(att => dbDeleteBlob(DB_CONFIG.STORES.ATTACHMENTS, att.blobKey)));
@@ -175,11 +186,12 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       attachments: [...taskData.attachments.filter(att => !attachmentsToRemove.find(r => r.id === att.id)), ...addedAttachments],
       voiceNotes: [...taskData.voiceNotes.filter(vn => !voiceNotesToRemove.find(r => r.id === vn.id)), ...addedVoiceNotes],
       updatedAt: now,
+      updatedBy: currentUser.id,
     };
     
     await dbPutTask(updatedTask);
     setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
-    showToast("Task updated successfully!", "success");
+    showToast("Görev başarıyla güncellendi!", "success");
   };
 
   const deleteTask = async (taskId: ID) => {
@@ -191,13 +203,19 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
     await dbDeleteTask(taskId);
     setTasks(prev => prev.filter(t => t.id !== taskId));
-    showToast("Task deleted.", "info");
+    showToast("Görev silindi.", "info");
   };
 
   const moveTask = async (taskId: ID, newStatus: TaskStatus) => {
+    if (!currentUser) return;
     const task = tasks.find(t => t.id === taskId);
     if (task && task.status !== newStatus) {
-      const updatedTask = { ...task, status: newStatus, updatedAt: new Date().toISOString() };
+      const updatedTask = { 
+        ...task, 
+        status: newStatus, 
+        updatedAt: new Date().toISOString(),
+        updatedBy: currentUser.id,
+      };
       await dbPutTask(updatedTask);
       setTasks(prev => prev.map(t => t.id === taskId ? updatedTask : t));
     }
@@ -213,34 +231,73 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     };
     await dbPutMember(newMember);
     setMembers(prev => [...prev, newMember]);
-    showToast("Team member added!", "success");
+    showToast("Takım üyesi eklendi!", "success");
   };
 
-  const updateMember = async (member: Member) => {
+  const updateMember = async (member: Member, avatarFile?: File) => {
     const updatedMember = { ...member, updatedAt: new Date().toISOString() };
+
+    if (avatarFile) {
+        if (updatedMember.avatarBlobKey) {
+            await dbDeleteBlob(DB_CONFIG.STORES.AVATARS, updatedMember.avatarBlobKey);
+        }
+        const newBlobKey = crypto.randomUUID();
+        await dbPutBlob(DB_CONFIG.STORES.AVATARS, newBlobKey, avatarFile);
+        updatedMember.avatarBlobKey = newBlobKey;
+        if (updatedMember.avatarUrl) {
+            delete updatedMember.avatarUrl;
+        }
+    }
+
     await dbPutMember(updatedMember);
     setMembers(prev => prev.map(m => m.id === member.id ? updatedMember : m));
-    showToast("Team member updated.", "success");
+    showToast("Takım üyesi güncellendi.", "success");
   };
 
   const deleteMember = async (memberId: ID) => {
-    // Optionally, re-assign tasks or handle dependencies before deleting
+    if (tasks.some(task => task.responsibleId === memberId)) {
+        showToast("Üye, bazı görevlerden sorumlu olduğu için silinemez. Lütfen önce görevleri yeniden atayın.", "error");
+        return;
+    }
+
+    const tasksToUpdate = tasks
+        .filter(task => task.assigneeIds.includes(memberId))
+        .map(task => ({
+            ...task,
+            assigneeIds: task.assigneeIds.filter(id => id !== memberId),
+            updatedAt: new Date().toISOString(),
+            updatedBy: currentUser?.id,
+        }));
+    
+    await Promise.all(tasksToUpdate.map(dbPutTask));
+    
+    const memberToDelete = members.find(m => m.id === memberId);
+    if (memberToDelete?.avatarBlobKey) {
+        await dbDeleteBlob(DB_CONFIG.STORES.AVATARS, memberToDelete.avatarBlobKey);
+    }
+    
     await dbDeleteMember(memberId);
+    
+    const updatedTasksMap = new Map(tasksToUpdate.map(task => [task.id, task]));
+    setTasks(prev => prev.map(task => updatedTasksMap.get(task.id) || task));
     setMembers(prev => prev.filter(m => m.id !== memberId));
-    showToast("Team member removed.", "info");
+    
+    showToast("Takım üyesi kaldırıldı.", "info");
   };
 
   const updateColumnNames = async (newNames: Record<TaskStatus, string>) => {
-    const newConfig: BoardConfig = { id: BOARD_CONFIG_ID, columnNames: newNames };
+    const config = await dbGetConfig(BOARD_CONFIG_ID);
+    if (!config) return;
+    const newConfig: BoardConfig = { ...config, columnNames: newNames };
     await dbPutConfig(newConfig);
     setColumnNames(newNames);
-    showToast("Board columns updated!", "success");
+    showToast("Pano sütunları güncellendi!", "success");
   };
 
   const clearAllTasks = async () => {
     await dbClearTasks();
     setTasks([]);
-    showToast("All tasks have been cleared.", "info");
+    showToast("Tüm görevler temizlendi.", "info");
   };
   
   const resetBoard = async () => {
@@ -250,9 +307,8 @@ export const KanbanProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       setMembers([]);
       setCurrentUser(null);
       await initializeData();
-      showToast("Board has been reset to default.", "success");
+      showToast("Pano varsayılana sıfırlandı.", "success");
   };
-
 
   return (
     <KanbanContext.Provider value={{

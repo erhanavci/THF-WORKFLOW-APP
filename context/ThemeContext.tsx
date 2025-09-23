@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: Theme;
@@ -13,32 +13,14 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('theme') as Theme) || 'system';
-    }
-    return 'system';
-  });
-  
-  const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof window !== 'undefined') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const storedTheme = localStorage.getItem('theme');
+      // Only return 'dark' if it's explicitly set, otherwise default to 'light'
+      return storedTheme === 'dark' ? 'dark' : 'light';
     }
     return 'light';
   });
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-        setSystemTheme(e.matches ? 'dark' : 'light');
-    };
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
   
-  const isDarkMode = useMemo(() => {
-    if (theme === 'dark') return true;
-    if (theme === 'light') return false;
-    return systemTheme === 'dark';
-  }, [theme, systemTheme]);
+  const isDarkMode = useMemo(() => theme === 'dark', [theme]);
   
   useEffect(() => {
     const root = window.document.documentElement;

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { Attachment } from '../types';
 import { formatFileSize, downloadBlob } from '../utils/helpers';
 import { dbGetBlob } from '../services/db';
@@ -6,13 +6,70 @@ import { DB_CONFIG } from '../constants';
 import FilePreviewModal from './FilePreviewModal';
 import { useToast } from '../hooks/useToast';
 
+const FileIcon: React.FC = () => (
+    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+);
+
+
+interface ThumbnailProps {
+    file?: File;
+    attachment?: Attachment;
+    onClick: () => void;
+}
+
+const Thumbnail: React.FC<ThumbnailProps> = ({ file, attachment, onClick }) => {
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        let objectUrl: string | null = null;
+
+        const generateUrl = async () => {
+            let blob: Blob | undefined;
+            if (file) {
+                blob = file;
+            } else if (attachment) {
+                blob = await dbGetBlob(DB_CONFIG.STORES.ATTACHMENTS, attachment.blobKey);
+            }
+
+            if (blob) {
+                objectUrl = URL.createObjectURL(blob);
+                setPreviewUrl(objectUrl);
+            }
+        };
+
+        generateUrl();
+
+        return () => {
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [file, attachment]);
+
+    return (
+        <button type="button" onClick={onClick} className="w-full h-24 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center overflow-hidden group relative">
+            {previewUrl ? (
+                <img src={previewUrl} alt={file?.name || attachment?.fileName} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+            ) : (
+                <FileIcon />
+            )}
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center text-white text-xs p-1">
+                Önizle
+            </div>
+        </button>
+    );
+};
+
 
 interface FileListProps {
   currentAttachments: Attachment[];
   newAttachments: {file: File, id: string}[];
   onNewAttachmentsChange: (files: {file: File, id: string}[]) => void;
   onCurrentAttachmentsChange: (attachments: Attachment[]) => void;
-  onAttachmentsToRemoveChange: (attachments: Attachment[]) => void;
+  // FIX: Changed type to allow functional updates for state.
+  onAttachmentsToRemoveChange: React.Dispatch<React.SetStateAction<Attachment[]>>;
 }
 
 const FileList: React.FC<FileListProps> = ({ currentAttachments, newAttachments, onNewAttachmentsChange, onCurrentAttachmentsChange, onAttachmentsToRemoveChange }) => {
@@ -47,7 +104,7 @@ const FileList: React.FC<FileListProps> = ({ currentAttachments, newAttachments,
     if (blob) {
       setPreviewFile({ name: attachment.fileName, type: attachment.mimeType, blob });
     } else {
-      showToast('Could not load attachment for preview.', 'error');
+      showToast('Önizleme için ek yüklenemedi.', 'error');
     }
   };
 
@@ -58,7 +115,7 @@ const FileList: React.FC<FileListProps> = ({ currentAttachments, newAttachments,
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Attachments</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ekler</label>
       <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md">
         <div className="space-y-1 text-center">
           <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
@@ -66,35 +123,53 @@ const FileList: React.FC<FileListProps> = ({ currentAttachments, newAttachments,
           </svg>
           <div className="flex text-sm text-gray-600 dark:text-gray-400">
             <label htmlFor="file-upload" className="relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-              <span>Upload files</span>
+              <span>Dosya yükle</span>
               <input id="file-upload" name="file-upload" type="file" multiple className="sr-only" onChange={handleFileChange} />
             </label>
-            <p className="pl-1">or drag and drop</p>
+            <p className="pl-1">veya sürükleyip bırak</p>
           </div>
         </div>
       </div>
       {(currentAttachments.length > 0 || newAttachments.length > 0) && (
-        <ul className="mt-4 space-y-2">
+        <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {currentAttachments.map(att => (
-            <li key={att.id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
-              <button type="button" onClick={() => handlePreviewCurrent(att)} className="truncate text-sky-600 dark:text-sky-400 hover:underline text-left" title={`Preview ${att.fileName}`}>
-                {att.fileName} <span className="text-gray-500 dark:text-gray-400 text-xs">({formatFileSize(att.sizeBytes)})</span>
-              </button>
-              <div>
-                <button type="button" onClick={() => handleDownload(att)} className="text-blue-500 hover:text-blue-700 mr-2">Download</button>
-                <button type="button" onClick={() => removeCurrentAttachment(att)} className="text-red-500 hover:text-red-700">Remove</button>
+            <div key={att.id} className="p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                {att.mimeType.startsWith('image/') ? (
+                    <Thumbnail attachment={att} onClick={() => handlePreviewCurrent(att)} />
+                ) : (
+                    <div className="w-full h-24 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                        <FileIcon />
+                    </div>
+                )}
+              <div className="text-xs mt-2">
+                <p className="truncate font-medium" title={att.fileName}>{att.fileName}</p>
+                <p className="text-gray-500 dark:text-gray-400">{formatFileSize(att.sizeBytes)}</p>
               </div>
-            </li>
+              <div className="mt-1 flex justify-end gap-2">
+                <button type="button" onClick={() => handleDownload(att)} className="text-blue-500 hover:text-blue-700 text-xs font-semibold">İndir</button>
+                <button type="button" onClick={() => removeCurrentAttachment(att)} className="text-red-500 hover:text-red-700 text-xs font-semibold">Kaldır</button>
+              </div>
+            </div>
           ))}
           {newAttachments.map((att, index) => (
-            <li key={att.id} className="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/50 rounded">
-               <button type="button" onClick={() => handlePreviewNew(att.file)} className="truncate text-sky-600 dark:text-sky-400 hover:underline text-left" title={`Preview ${att.file.name}`}>
-                  {att.file.name} <span className="text-gray-500 dark:text-gray-400 text-xs">({formatFileSize(att.file.size)})</span>
-               </button>
-              <button type="button" onClick={() => removeNewAttachment(index)} className="text-red-500 hover:text-red-700">Remove</button>
-            </li>
+             <div key={att.id} className="p-2 bg-blue-50 dark:bg-blue-900/50 rounded-lg">
+                {att.file.type.startsWith('image/') ? (
+                    <Thumbnail file={att.file} onClick={() => handlePreviewNew(att.file)} />
+                ) : (
+                    <div className="w-full h-24 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
+                        <FileIcon />
+                    </div>
+                )}
+               <div className="text-xs mt-2">
+                    <p className="truncate font-medium" title={att.file.name}>{att.file.name}</p>
+                    <p className="text-gray-500 dark:text-gray-400">{formatFileSize(att.file.size)}</p>
+                </div>
+                <div className="mt-1 flex justify-end">
+                    <button type="button" onClick={() => removeNewAttachment(index)} className="text-red-500 hover:text-red-700 text-xs font-semibold">Kaldır</button>
+                </div>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
        <FilePreviewModal 
             isOpen={!!previewFile} 

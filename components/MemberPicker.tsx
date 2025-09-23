@@ -47,7 +47,7 @@ const MemberPicker: React.FC<MemberPickerProps> = ({ allMembers, selectedIds, on
                     </div>
                 ))}
                 <button type="button" onClick={() => setIsOpen(!isOpen)} className="text-blue-500 hover:text-blue-700 text-sm p-1">
-                    + Add
+                    + Ekle
                 </button>
             </div>
             {isOpen && (
@@ -57,7 +57,7 @@ const MemberPicker: React.FC<MemberPickerProps> = ({ allMembers, selectedIds, on
                             <Avatar member={member} size="md" />
                             <span className="ml-3">{member.name}</span>
                         </div>
-                    )) : <div className="px-4 py-2 text-gray-500">All members assigned.</div>}
+                    )) : <div className="px-4 py-2 text-gray-500">Tüm üyeler atandı.</div>}
                 </div>
             )}
         </div>

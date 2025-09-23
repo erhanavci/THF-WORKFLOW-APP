@@ -3,21 +3,21 @@
 export type ID = string;
 
 export enum MemberRole {
-  ADMIN = 'Admin',
-  MEMBER = 'Member',
+  ADMIN = 'Yönetici',
+  MEMBER = 'Üye',
 }
 
 export enum TaskStatus {
-  BACKLOG = 'Backlog',
-  TODO = 'To Do',
-  IN_PROGRESS = 'In Progress',
-  DONE = 'Done'
+  BACKLOG = 'Beklemede',
+  TODO = 'Yapılacak',
+  IN_PROGRESS = 'Devam Ediyor',
+  DONE = 'Tamamlandı'
 }
 
 export enum TaskPriority {
-    LOW = 'Low',
-    MEDIUM = 'Medium',
-    HIGH = 'High',
+    LOW = 'Düşük',
+    MEDIUM = 'Orta',
+    HIGH = 'Yüksek',
 }
 
 export const AllTaskStatuses: TaskStatus[] = [
@@ -40,6 +40,7 @@ export interface Member {
   email: string;
   role: MemberRole;
   avatarUrl?: string;
+  avatarBlobKey?: ID;
   createdAt: string; // ISO
   updatedAt: string; // ISO
 };
@@ -60,6 +61,13 @@ export interface VoiceNote {
   createdAt: string;
 };
 
+export interface Note {
+  id: ID;
+  content: string;
+  authorId: ID;
+  createdAt: string; // ISO
+}
+
 export interface Task {
   id: ID;
   title: string;
@@ -71,8 +79,10 @@ export interface Task {
   responsibleId: ID;  // required
   attachments: Attachment[];
   voiceNotes: VoiceNote[];
+  notes: Note[];
   createdAt: string;
   updatedAt: string;
+  updatedBy?: ID;
 };
 
 export interface FilterState {

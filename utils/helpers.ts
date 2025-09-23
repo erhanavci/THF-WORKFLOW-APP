@@ -1,9 +1,16 @@
-
 export const formatDate = (isoString?: string): string => {
-  if (!isoString) return 'No due date';
-  return new Date(isoString).toLocaleDateString(undefined, {
+  if (!isoString) return 'Son tarih yok';
+  return new Date(isoString).toLocaleDateString('tr-TR', {
     month: 'short',
     day: 'numeric',
+  });
+};
+
+export const formatDateTime = (isoString?: string): string => {
+  if (!isoString) return '';
+  return new Date(isoString).toLocaleString('tr-TR', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
   });
 };
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { VoiceNote } from '../types';
 import { formatDuration, downloadBlob } from '../utils/helpers';
@@ -11,7 +10,8 @@ interface VoiceRecorderProps {
   newVoiceNotes: {blob: Blob, durationMs: number, id: string}[];
   onNewVoiceNotesChange: (notes: {blob: Blob, durationMs: number, id: string}[]) => void;
   onCurrentVoiceNotesChange: (notes: VoiceNote[]) => void;
-  onVoiceNotesToRemoveChange: (notes: VoiceNote[]) => void;
+  // FIX: Changed type to allow functional updates for state.
+  onVoiceNotesToRemoveChange: React.Dispatch<React.SetStateAction<VoiceNote[]>>;
 }
 
 const MicIcon: React.FC<{className?: string}> = ({className}) => (
@@ -80,7 +80,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ currentVoiceNotes, newVoi
       }, 1000);
     } catch (err) {
       console.error("Error accessing microphone:", err);
-      showToast("Could not access microphone. Please check permissions.", "error");
+      showToast("Mikrofona erişilemedi. Lütfen izinleri kontrol edin.", "error");
     }
   };
 
@@ -131,7 +131,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ currentVoiceNotes, newVoi
 
     audio.play().catch(e => {
         console.error("Audio playback failed:", e);
-        showToast("Could not play audio. The operation is not supported.", "error");
+        showToast("Ses oynatılamadı. İşlem desteklenmiyor.", "error");
         URL.revokeObjectURL(url);
         currentAudioUrlRef.current = null;
         setPlayingNoteId(null);
@@ -148,19 +148,19 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ currentVoiceNotes, newVoi
     if(blob) {
       playBlob(blob, note.id);
     } else {
-      showToast("Could not load voice note.", "error");
+      showToast("Sesli not yüklenemedi.", "error");
     }
   }
 
   const downloadCurrentVoiceNote = async (note: VoiceNote) => {
     const blob = await dbGetBlob(DB_CONFIG.STORES.VOICE_NOTES, note.blobKey);
-    if(blob) downloadBlob(blob, `voicenote-${note.id}.webm`);
+    if(blob) downloadBlob(blob, `seslinot-${note.id}.webm`);
   }
 
   return (
     <div>
       <audio ref={audioPlayerRef} style={{ display: 'none' }} />
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Voice Notes</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Sesli Notlar</label>
       <div className="mt-1 flex items-center gap-4">
         <button
           type="button"
@@ -180,11 +180,11 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ currentVoiceNotes, newVoi
                     <button type="button" onClick={() => playCurrentVoiceNote(note)} className="text-blue-500">
                       {playingNoteId === note.id ? <PauseIcon className="w-5 h-5"/> : <PlayIcon className="w-5 h-5"/>}
                     </button>
-                    <span>Voice Note ({formatDuration(note.durationMs)})</span>
+                    <span>Sesli Not ({formatDuration(note.durationMs)})</span>
                 </div>
                 <div>
-                    <button type="button" onClick={() => downloadCurrentVoiceNote(note)} className="text-blue-500 hover:text-blue-700 mr-2">Download</button>
-                    <button type="button" onClick={() => removeCurrentVoiceNote(note)} className="text-red-500 hover:text-red-700">Remove</button>
+                    <button type="button" onClick={() => downloadCurrentVoiceNote(note)} className="text-blue-500 hover:text-blue-700 mr-2">İndir</button>
+                    <button type="button" onClick={() => removeCurrentVoiceNote(note)} className="text-red-500 hover:text-red-700">Kaldır</button>
                 </div>
             </li>
           ))}
@@ -194,9 +194,9 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ currentVoiceNotes, newVoi
                     <button type="button" onClick={() => playBlob(note.blob, note.id)} className="text-blue-500">
                       {playingNoteId === note.id ? <PauseIcon className="w-5 h-5"/> : <PlayIcon className="w-5 h-5"/>}
                     </button>
-                    <span>New Voice Note ({formatDuration(note.durationMs)})</span>
+                    <span>Yeni Sesli Not ({formatDuration(note.durationMs)})</span>
                  </div>
-              <button type="button" onClick={() => removeNewVoiceNote(index)} className="text-red-500 hover:text-red-700">Remove</button>
+              <button type="button" onClick={() => removeNewVoiceNote(index)} className="text-red-500 hover:text-red-700">Kaldır</button>
             </li>
           ))}
         </ul>

@@ -25,6 +25,9 @@ const getDb = (): Promise<IDBPDatabase> => {
         if (!db.objectStoreNames.contains(STORES.CONFIG)) {
             db.createObjectStore(STORES.CONFIG, { keyPath: 'id' });
         }
+        if (!db.objectStoreNames.contains(STORES.AVATARS)) {
+            db.createObjectStore(STORES.AVATARS, { keyPath: 'id' });
+        }
       },
     });
   }

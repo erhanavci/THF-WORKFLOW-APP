@@ -25,7 +25,7 @@ const Board: React.FC = () => {
     }, [tasks, filters]);
 
     if (loading) {
-        return <div className="flex justify-center items-center h-full"><p>Loading board...</p></div>;
+        return <div className="flex justify-center items-center h-full"><p>Pano yükleniyor...</p></div>;
     }
 
     return (

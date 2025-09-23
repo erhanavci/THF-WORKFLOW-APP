@@ -26,7 +26,7 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ isOpen, onClose, fi
           setIsLoading(false);
         };
         reader.onerror = () => {
-          setTextContent('Could not read file content.');
+          setTextContent('Dosya içeriği okunamadı.');
           setIsLoading(false);
         };
         reader.readAsText(file.blob);
@@ -51,8 +51,8 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ isOpen, onClose, fi
   };
 
   const renderPreview = () => {
-    if (isLoading) return <p>Loading preview...</p>;
-    if (!fileUrl) return <p>Could not load file.</p>;
+    if (isLoading) return <p>Önizleme yükleniyor...</p>;
+    if (!fileUrl) return <p>Dosya yüklenemedi.</p>;
 
     const mimeType = file.type;
 
@@ -63,10 +63,10 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ isOpen, onClose, fi
       return <iframe src={fileUrl} title={file.name} className="w-full h-[75vh]" />;
     }
     if (mimeType.startsWith('audio/')) {
-      return <audio controls src={fileUrl} className="w-full">Your browser does not support the audio element.</audio>;
+      return <audio controls src={fileUrl} className="w-full">Tarayıcınız ses öğesini desteklemiyor.</audio>;
     }
     if (mimeType.startsWith('video/')) {
-      return <video controls src={fileUrl} className="max-w-full max-h-[70vh]">Your browser does not support the video element.</video>;
+      return <video controls src={fileUrl} className="max-w-full max-h-[70vh]">Tarayıcınız video öğesini desteklemiyor.</video>;
     }
     if (mimeType.startsWith('text/')) {
       return <pre className="whitespace-pre-wrap bg-gray-100 dark:bg-gray-800 p-4 rounded-md text-sm max-h-[70vh] overflow-auto">{textContent}</pre>;
@@ -74,25 +74,25 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ isOpen, onClose, fi
 
     return (
       <div className="text-center p-8">
-        <p>Preview is not available for this file type ({mimeType}).</p>
+        <p>Bu dosya türü için önizleme mevcut değil ({mimeType}).</p>
         <button onClick={handleDownload} className="mt-4 px-4 py-2 text-sm font-semibold text-white bg-sky-600 rounded-lg shadow-sm hover:bg-sky-700 transition-colors">
-          Download File
+          Dosyayı İndir
         </button>
       </div>
     );
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`Preview: ${file.name}`} className="max-w-4xl">
+    <Modal isOpen={isOpen} onClose={onClose} title={`Önizleme: ${file.name}`} className="max-w-4xl">
       <div className="min-h-[50vh] flex items-center justify-center">
         {renderPreview()}
       </div>
         <footer className="flex justify-end gap-4 pt-6 mt-4 border-t border-gray-200 dark:border-gray-800">
             <button type="button" onClick={handleDownload} className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            Download
+            İndir
             </button>
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-white bg-sky-600 rounded-lg shadow-sm hover:bg-sky-700 transition-colors">
-            Close
+            Kapat
             </button>
         </footer>
     </Modal>

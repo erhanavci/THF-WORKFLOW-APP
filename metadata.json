@@ -1,6 +1,6 @@
 {
-  "name": "THF WORKFLOW APP",
-  "description": "A Trello-like Kanban board web application for managing tasks. Features include drag-and-drop functionality, task creation with assignments, file attachments, voice notes, due dates, and persistent storage using IndexedDB.",
+  "name": "THF WORKFLOW",
+  "description": "THF WORKFLOW, görevleri yönetmek için Trello benzeri bir Kanban panosu web uygulamasıdır. Sürükle-bırak işlevselliği, atamalarla görev oluşturma, dosya ekleri, sesli notlar, son tarihler ve IndexedDB kullanarak kalıcı depolama gibi özellikleri içerir.",
   "requestFramePermissions": [
     "microphone"
   ]

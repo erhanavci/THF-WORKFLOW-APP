@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { Task, Member, TaskStatus, TaskPriority } from '../types';
 import { useKanbanStore } from '../hooks/useKanbanStore';
-import { formatDate, isOverdue } from '../utils/helpers';
+import { formatDate, isOverdue, formatDateTime } from '../utils/helpers';
 import TaskModal from './TaskModal';
 import Avatar from './Avatar';
 import { PriorityHighIcon, PriorityMediumIcon, PriorityLowIcon } from './icons/Icons';
@@ -34,7 +34,7 @@ const PriorityIcon: React.FC<{ priority: TaskPriority }> = ({ priority }) => {
         <div className="relative group flex items-center">
             <IconComponent className={`w-4 h-4 ${style.color}`} />
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                {priority} Priority
+                {priority} Öncelik
             </div>
         </div>
     );
@@ -46,6 +46,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
 
     const assignees = task.assigneeIds.map(getMemberById).filter(Boolean) as Member[];
     const responsibleMember = getMemberById(task.responsibleId);
+    const lastEditor = task.updatedBy ? getMemberById(task.updatedBy) : null;
     const overdue = task.status !== TaskStatus.DONE && isOverdue(task.dueDate);
 
     const [{ isDragging }, drag] = useDrag(() => ({
@@ -56,41 +57,51 @@ const TaskCard: React.FC<TaskCardProps> = ({ task }) => {
         }),
     }), [task.id]);
 
+
     return (
         <>
             <div
-                ref={drag}
+                ref={drag as any}
                 onClick={() => setIsModalOpen(true)}
-                className={`bg-white dark:bg-gray-900 rounded-lg p-4 cursor-pointer hover:shadow-md transition-all duration-200 ring-1 ring-gray-200 dark:ring-gray-800 ${isDragging ? 'opacity-50 ring-2 ring-sky-500 shadow-2xl scale-105' : 'shadow-sm'}`}
+                className={`bg-white dark:bg-gray-900 rounded-lg p-4 cursor-pointer hover:shadow-md transition-all duration-200 ring-1 ring-gray-200 dark:ring-gray-800 flex flex-col justify-between ${isDragging ? 'opacity-50 ring-2 ring-sky-500 shadow-2xl scale-105' : 'shadow-sm'}`}
                 role="button"
-                aria-label={`Edit task: ${task.title}`}
+                aria-label={`Görevi düzenle: ${task.title}`}
             >
-                <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">{task.title}</h4>
-                
-                <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                    <div className="flex items-center gap-3">
-                        <PriorityIcon priority={task.priority} />
-                        {task.attachments.length > 0 && <span className="flex items-center gap-1"><AttachmentIcon /> {task.attachments.length}</span>}
-                        {task.voiceNotes.length > 0 && <span className="flex items-center gap-1"><MicIcon /> {task.voiceNotes.length}</span>}
+                <div>
+                    <h4 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">{task.title}</h4>
+                    
+                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-3">
+                            <PriorityIcon priority={task.priority} />
+                            {task.attachments.length > 0 && <span className="flex items-center gap-1"><AttachmentIcon /> {task.attachments.length}</span>}
+                            {task.voiceNotes.length > 0 && <span className="flex items-center gap-1"><MicIcon /> {task.voiceNotes.length}</span>}
+                        </div>
+                         {task.dueDate && (
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${overdue ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-800'}`}>
+                                {formatDate(task.dueDate)}
+                            </span>
+                        )}
                     </div>
-                     {task.dueDate && (
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${overdue ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' : 'bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-800'}`}>
-                            {formatDate(task.dueDate)}
-                        </span>
-                    )}
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                    <div className="flex -space-x-2">
-                        {assignees.map(member => <Avatar key={member.id} member={member} />)}
-                    </div>
-                    {responsibleMember && (
-                         <div className="relative group">
-                            <Avatar member={responsibleMember} size="md" responsible />
-                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                                Responsible: {responsibleMember.name}
-                            </div>
+                <div className="mt-4">
+                    <div className="pt-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                        <div className="flex -space-x-2">
+                            {assignees.map(member => <Avatar key={member.id} member={member} />)}
                         </div>
+                        {responsibleMember && (
+                             <div className="relative group">
+                                <Avatar member={responsibleMember} size="md" responsible />
+                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                                    Sorumlu: {responsibleMember.name}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                     {lastEditor && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 text-right truncate">
+                            Düzenleyen: {lastEditor.name}
+                        </p>
                     )}
                 </div>
             </div>
