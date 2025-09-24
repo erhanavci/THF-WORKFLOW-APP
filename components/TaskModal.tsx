@@ -15,7 +15,7 @@ interface TaskModalProps {
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
-  const { addTask, updateTask, members, columnNames, currentUser, getMemberById } = useKanbanStore();
+  const { addTask, updateTask, deleteTask, members, columnNames, currentUser, getMemberById } = useKanbanStore();
   const { showToast } = useToast();
 
   const [title, setTitle] = useState(task?.title || '');
@@ -23,8 +23,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
   const [dueDate, setDueDate] = useState(task?.dueDate ? task.dueDate.split('T')[0] : '');
   const [status, setStatus] = useState<TaskStatus>(task?.status || TaskStatus.BACKLOG);
   const [priority, setPriority] = useState<TaskPriority>(task?.priority || TaskPriority.MEDIUM);
-  const [assigneeIds, setAssigneeIds] = useState<ID[]>(task?.assigneeIds || []);
-  const [responsibleId, setResponsibleId] = useState<ID | undefined>(task?.responsibleId);
+  const [assigneeIds, setAssigneeIds] = useState<ID[]>(task?.assigneeIds || (currentUser ? [currentUser.id] : []));
+  const [responsibleId, setResponsibleId] = useState<ID | undefined>(task?.responsibleId || (currentUser ? currentUser.id : undefined));
   
   const [currentAttachments, setCurrentAttachments] = useState<Attachment[]>(task?.attachments || []);
   const [newAttachments, setNewAttachments] = useState<{file: File, id: string}[]>([]);
@@ -38,6 +38,13 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
   const [newNoteContent, setNewNoteContent] = useState('');
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Permission checks
+  const isUserAdmin = currentUser?.role === MemberRole.ADMIN;
+  const isUserCreator = task?.creatorId === currentUser?.id;
+  const canEditContent = isUserAdmin || !task || isUserCreator;
+  const canManageAssignees = isUserAdmin || !task || isUserCreator;
+  const canDeleteTask = task && (isUserAdmin || isUserCreator);
 
   useEffect(() => {
     // If the responsible person is un-assigned, clear the responsible field
@@ -64,6 +71,20 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
     };
     setNotes(prev => [...prev, newNote]);
     setNewNoteContent('');
+  };
+
+  const handleDelete = async () => {
+    if (task) {
+      if (window.confirm(`"${task.title}" görevini kalıcı olarak silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`)) {
+        try {
+          await deleteTask(task.id);
+          onClose();
+        } catch (error) {
+          console.error('Failed to delete task:', error);
+          showToast('Görev silinemedi.', 'error');
+        }
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,9 +133,8 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
     }
   }
   
-  const inputStyles = "mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 bg-white dark:bg-gray-800 read-only:bg-gray-100 dark:read-only:bg-gray-800/50";
-  const labelStyles = "block text-sm font-medium text-gray-700 dark:text-gray-300";
-  const isUserAdmin = currentUser?.role === MemberRole.ADMIN;
+  const inputStyles = "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 bg-gray-50 read-only:bg-gray-100 read-only:cursor-not-allowed disabled:bg-gray-100 disabled:cursor-not-allowed";
+  const labelStyles = "block text-sm font-medium text-gray-700";
 
   return (
     <Modal isOpen onClose={onClose} title={task ? 'Görevi Düzenle' : 'Yeni Görev Oluştur'} className="max-w-4xl">
@@ -124,8 +144,9 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
           <div className="md:col-span-2 space-y-6">
             <div>
               <label htmlFor="title" className={labelStyles}>Başlık</label>
-              <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} className={inputStyles} />
+              <input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} className={inputStyles} readOnly={!canEditContent} />
               {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title}</p>}
+              {!canEditContent && <p className="text-xs text-gray-500 mt-1">Bu görevi siz oluşturmadığınız için başlığı düzenleyemezsiniz.</p>}
             </div>
             <div>
               <label htmlFor="description" className={labelStyles}>Açıklama</label>
@@ -135,30 +156,29 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
                 onChange={(e) => setDescription(e.target.value)} 
                 rows={4} 
                 className={inputStyles}
-                readOnly={!isUserAdmin}
-                aria-readonly={!isUserAdmin}
+                readOnly={!canEditContent}
               ></textarea>
-              {!isUserAdmin && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Açıklamayı sadece Yöneticiler düzenleyebilir.</p>}
+              {!canEditContent && <p className="text-xs text-gray-500 mt-1">Bu görevi siz oluşturmadığınız için açıklamayı düzenleyemezsiniz.</p>}
             </div>
             
             <div className="space-y-4">
                 <h3 className={labelStyles}>Notlar</h3>
-                <div className="space-y-4 max-h-48 overflow-y-auto pr-2 border-b border-gray-200 dark:border-gray-700 pb-4">
+                <div className="space-y-4 max-h-48 overflow-y-auto pr-2 border-b border-gray-200 pb-4">
                     {notes.length > 0 ? notes.map(note => {
                         const author = getMemberById(note.authorId);
                         return (
                             <div key={note.id} className="flex items-start gap-3">
                                 {author ? <Avatar member={author} size="md" /> : <div className="w-8 h-8 rounded-full bg-gray-300"></div>}
-                                <div className="flex-1 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
+                                <div className="flex-1 bg-gray-50 p-3 rounded-lg">
                                     <div className="flex items-center justify-between">
                                         <p className="font-semibold text-sm">{author?.name || 'Bilinmeyen Kullanıcı'}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">{formatDateTime(note.createdAt)}</p>
+                                        <p className="text-xs text-gray-500">{formatDateTime(note.createdAt)}</p>
                                     </div>
                                     <p className="text-sm mt-1 whitespace-pre-wrap">{note.content}</p>
                                 </div>
                             </div>
                         )
-                    }) : <p className="text-sm text-gray-500 dark:text-gray-400">Henüz not yok.</p>}
+                    }) : <p className="text-sm text-gray-500">Henüz not yok.</p>}
                 </div>
                  <div>
                     <textarea 
@@ -193,7 +213,7 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6 bg-white dark:bg-black/20 p-6 rounded-lg -m-6 md:m-0">
+          <div className="space-y-6 bg-white p-6 rounded-lg -m-6 md:m-0">
             <div>
               <label htmlFor="status" className={labelStyles}>Durum</label>
               <select id="status" value={status} onChange={(e) => setStatus(e.target.value as TaskStatus)} className={inputStyles}>
@@ -212,11 +232,12 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
             </div>
              <div>
               <label className={labelStyles}>Atananlar</label>
-              <MemberPicker allMembers={members} selectedIds={assigneeIds} onChange={handleMemberChange} />
+              <MemberPicker allMembers={members} selectedIds={assigneeIds} onChange={handleMemberChange} readOnly={!canManageAssignees} />
+               {!canManageAssignees && <p className="text-xs text-gray-500 mt-1">Atananları yalnızca görevi oluşturan kişi veya bir yönetici değiştirebilir.</p>}
             </div>
             <div>
               <label htmlFor="responsible" className={labelStyles}>Sorumlu</label>
-              <select id="responsible" value={responsibleId || ''} onChange={handleResponsibleChange} className={inputStyles}>
+              <select id="responsible" value={responsibleId || ''} onChange={handleResponsibleChange} className={inputStyles} disabled={!canManageAssignees}>
                 <option value="" disabled>Bir kişi seçin</option>
                 {members.map(member => (
                   <option key={member.id} value={member.id}>{member.name}</option>
@@ -227,13 +248,26 @@ const TaskModal: React.FC<TaskModalProps> = ({ task, onClose }) => {
           </div>
         </div>
 
-        <footer className="flex justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-800">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-            İptal
-          </button>
-          <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-sky-600 rounded-lg shadow-sm hover:bg-sky-700 transition-colors">
-            {task ? 'Değişiklikleri Kaydet' : 'Görev Oluştur'}
-          </button>
+        <footer className="flex justify-between items-center gap-4 pt-6 border-t border-gray-200">
+          <div>
+            {task && canDeleteTask && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="px-4 py-2 text-sm font-semibold text-red-700 bg-white border border-red-300 rounded-lg shadow-sm hover:bg-red-50 transition-colors"
+              >
+                Görevi Sil
+              </button>
+            )}
+          </div>
+          <div className="flex gap-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors">
+              İptal
+            </button>
+            <button type="submit" className="px-4 py-2 text-sm font-semibold text-white bg-sky-600 rounded-lg shadow-sm hover:bg-sky-700 transition-colors">
+              {task ? 'Değişiklikleri Kaydet' : 'Görev Oluştur'}
+            </button>
+          </div>
         </footer>
       </form>
     </Modal>

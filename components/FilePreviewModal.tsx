@@ -69,7 +69,7 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ isOpen, onClose, fi
       return <video controls src={fileUrl} className="max-w-full max-h-[70vh]">Tarayıcınız video öğesini desteklemiyor.</video>;
     }
     if (mimeType.startsWith('text/')) {
-      return <pre className="whitespace-pre-wrap bg-gray-100 dark:bg-gray-800 p-4 rounded-md text-sm max-h-[70vh] overflow-auto">{textContent}</pre>;
+      return <pre className="whitespace-pre-wrap bg-gray-100 p-4 rounded-md text-sm max-h-[70vh] overflow-auto">{textContent}</pre>;
     }
 
     return (
@@ -87,8 +87,8 @@ const FilePreviewModal: React.FC<FilePreviewModalProps> = ({ isOpen, onClose, fi
       <div className="min-h-[50vh] flex items-center justify-center">
         {renderPreview()}
       </div>
-        <footer className="flex justify-end gap-4 pt-6 mt-4 border-t border-gray-200 dark:border-gray-800">
-            <button type="button" onClick={handleDownload} className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white dark:bg-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+        <footer className="flex justify-end gap-4 pt-6 mt-4 border-t border-gray-200">
+            <button type="button" onClick={handleDownload} className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 transition-colors">
             İndir
             </button>
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-white bg-sky-600 rounded-lg shadow-sm hover:bg-sky-700 transition-colors">

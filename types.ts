@@ -38,6 +38,7 @@ export interface Member {
   id: ID;
   name: string;
   email: string;
+  password?: string;
   role: MemberRole;
   avatarUrl?: string;
   avatarBlobKey?: ID;
@@ -82,7 +83,10 @@ export interface Task {
   notes: Note[];
   createdAt: string;
   updatedAt: string;
+  creatorId: ID;
   updatedBy?: ID;
+  isArchived?: boolean;
+  completedAt?: string; // ISO
 };
 
 export interface FilterState {
@@ -95,4 +99,21 @@ export interface FilterState {
 export interface BoardConfig {
   id: string; // Should be a constant value for singleton config
   columnNames: Record<TaskStatus, string>;
+}
+
+export enum NotificationType {
+  OVERDUE = 'OVERDUE',
+  DUE_SOON = 'DUE_SOON',
+  ASSIGNMENT = 'ASSIGNMENT',
+}
+
+export interface Notification {
+  id: ID;
+  recipientId: ID;
+  taskId: ID;
+  taskTitle: string;
+  type: NotificationType;
+  message: string;
+  isRead: boolean;
+  createdAt: string; // ISO
 }

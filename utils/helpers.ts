@@ -21,6 +21,32 @@ export const isOverdue = (isoString?: string): boolean => {
   return new Date(isoString) < today;
 };
 
+export const getDaysUntil = (isoString?: string): { text: string; color: string } | null => {
+  if (!isoString) {
+    return null;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dueDate = new Date(isoString);
+  dueDate.setHours(0, 0, 0, 0);
+
+  const diffTime = dueDate.getTime() - today.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return { text: `${Math.abs(diffDays)} gün gecikti`, color: 'text-red-600' };
+  }
+  if (diffDays === 0) {
+    return { text: 'Bugün son', color: 'text-amber-600' };
+  }
+  if (diffDays <= 3) {
+      return { text: `${diffDays} gün kaldı`, color: 'text-amber-600' };
+  }
+  return { text: `${diffDays} gün kaldı`, color: 'text-green-600' };
+};
+
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;

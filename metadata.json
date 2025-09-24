@@ -1,6 +1,6 @@
 {
-  "name": "THF WORKFLOW",
-  "description": "THF WORKFLOW, görevleri yönetmek için Trello benzeri bir Kanban panosu web uygulamasıdır. Sürükle-bırak işlevselliği, atamalarla görev oluşturma, dosya ekleri, sesli notlar, son tarihler ve IndexedDB kullanarak kalıcı depolama gibi özellikleri içerir.",
+  "name": "THF WORKFLOW FINAL",
+  "description": "THF WORKFLOW, görevleri yönetmek için bir Kanban panosu web uygulamasıdır. Sürükle-bırak işlevselliği, atamalarla görev oluşturma, dosya ekleri, sesli notlar, son tarihler ve IndexedDB kullanarak kalıcı depolama gibi özellikleri içerir.",
   "requestFramePermissions": [
     "microphone"
   ]

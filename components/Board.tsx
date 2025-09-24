@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useKanbanStore } from '../hooks/useKanbanStore';
-import { AllTaskStatuses, TaskStatus } from '../types';
+import { AllTaskStatuses, Task, TaskPriority, TaskStatus } from '../types';
 import Column from './Column';
 import { isOverdue, isThisWeek } from '../utils/helpers';
 
@@ -28,14 +28,41 @@ const Board: React.FC = () => {
         return <div className="flex justify-center items-center h-full"><p>Pano yükleniyor...</p></div>;
     }
 
+    const sortTasks = (tasksToSort: Task[]) => {
+        return [...tasksToSort].sort((a, b) => {
+            const priorityOrder = {
+                [TaskPriority.HIGH]: 0,
+                [TaskPriority.MEDIUM]: 1,
+                [TaskPriority.LOW]: 2,
+            };
+
+            // 1. Sort by priority
+            if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+                return priorityOrder[a.priority] - priorityOrder[b.priority];
+            }
+
+            // 2. Sort by due date (earlier is higher priority, no due date is lowest)
+            const aDueDate = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+            const bDueDate = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+            if (aDueDate !== bDueDate) {
+                return aDueDate - bDueDate;
+            }
+
+            // 3. Sort by creation date (newer first)
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+    };
+
+
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 h-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             {AllTaskStatuses.map(status => (
-                <Column
-                    key={status}
-                    status={status}
-                    tasks={filteredTasks.filter(task => task.status === status)}
-                />
+                <div key={status}>
+                    <Column
+                        status={status}
+                        tasks={sortTasks(filteredTasks.filter(task => task.status === status))}
+                    />
+                </div>
             ))}
         </div>
     );

@@ -50,7 +50,7 @@ const Avatar: React.FC<AvatarProps> = ({ member, size = 'md', responsible = fals
   };
 
   const fallbackAvatar = (
-    <div className={`${sizeClasses[size]} rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-white font-bold`}>
+    <div className={`${sizeClasses[size]} rounded-full bg-gray-300 flex items-center justify-center text-white font-bold`}>
         {member.name.charAt(0).toUpperCase()}
     </div>
   );
@@ -59,7 +59,7 @@ const Avatar: React.FC<AvatarProps> = ({ member, size = 'md', responsible = fals
     <div className="relative group">
       {imageUrl ? (
         <img
-          className={`${sizeClasses[size]} rounded-full object-cover ring-2 ring-white dark:ring-gray-900 ${responsible ? 'ring-sky-500' : ''}`}
+          className={`${sizeClasses[size]} rounded-full object-cover ring-2 ring-white ${responsible ? 'ring-sky-500' : ''}`}
           src={imageUrl}
           alt={member.name}
           onError={() => setImageUrl(undefined)}

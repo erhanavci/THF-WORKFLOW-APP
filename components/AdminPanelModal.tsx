@@ -23,6 +23,8 @@ const TeamManagement: React.FC = () => {
     const [newMemberName, setNewMemberName] = useState('');
     const [newMemberEmail, setNewMemberEmail] = useState('');
     const [newMemberRole, setNewMemberRole] = useState<MemberRole>(MemberRole.MEMBER);
+    const [newMemberPassword, setNewMemberPassword] = useState('');
+
 
     const handleAddMember = (e: React.FormEvent) => {
         e.preventDefault();
@@ -34,15 +36,22 @@ const TeamManagement: React.FC = () => {
             showToast('Geçerli bir e-posta adresi gereklidir.', 'error');
             return;
         }
+        if (!newMemberPassword.trim()) {
+            showToast('Şifre gereklidir.', 'error');
+            return;
+        }
+
         addMember({
             name: newMemberName,
             email: newMemberEmail,
             role: newMemberRole,
+            password: newMemberPassword,
             avatarUrl: `https://i.pravatar.cc/150?u=${crypto.randomUUID()}`,
         });
         setNewMemberName('');
         setNewMemberEmail('');
         setNewMemberRole(MemberRole.MEMBER);
+        setNewMemberPassword('');
     };
 
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,10 +106,10 @@ const TeamManagement: React.FC = () => {
         <div className="space-y-6">
             <input type="file" accept="image/png, image/jpeg, image/gif" ref={fileInputRef} onChange={handleAvatarChange} className="hidden" />
             <div>
-                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Takım Üyeleri</h3>
+                <h3 className="text-lg font-medium text-gray-800">Takım Üyeleri</h3>
                 <ul className="mt-4 space-y-2 max-h-60 overflow-y-auto pr-2">
                     {members.map(member => (
-                        <li key={member.id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded-md gap-2 border border-gray-200 dark:border-gray-700">
+                        <li key={member.id} className="flex items-center justify-between p-2 bg-white rounded-md gap-2 border border-gray-200">
                             {editingMember?.id === member.id ? (
                                 <>
                                     <div className="flex-grow flex items-center gap-2">
@@ -116,15 +125,15 @@ const TeamManagement: React.FC = () => {
                                             </button>
                                         </div>
                                         <div className="flex-grow space-y-1">
-                                            <input type="text" value={editingMember.name} onChange={(e) => handleInputChange('name', e.target.value)} className="block w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm" placeholder="İsim" />
-                                            <input type="email" value={editingMember.email} onChange={(e) => handleInputChange('email', e.target.value)} className="block w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-sm" placeholder="E-posta" />
+                                            <input type="text" value={editingMember.name} onChange={(e) => handleInputChange('name', e.target.value)} className="block w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-sm" placeholder="İsim" />
+                                            <input type="email" value={editingMember.email} onChange={(e) => handleInputChange('email', e.target.value)} className="block w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-sm" placeholder="E-posta" />
                                         </div>
                                     </div>
                                     <div className="w-32 shrink-0">
                                         <select
                                             value={editingMember.role}
                                             onChange={(e) => handleInputChange('role', e.target.value)}
-                                            className="block w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-xs"
+                                            className="block w-full px-2 py-1 border border-gray-300 rounded-md bg-gray-50 text-xs"
                                             disabled={editingMember.id === currentUser?.id}
                                         >
                                             <option value={MemberRole.ADMIN}>Yönetici</option>
@@ -137,8 +146,8 @@ const TeamManagement: React.FC = () => {
                                     <Avatar member={member} size="md" />
                                     <div>
                                         <p className="font-semibold">{member.name} {member.id === currentUser?.id && <span className="text-xs text-blue-500">(Siz)</span>}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">{member.email}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">{member.role}</p>
+                                        <p className="text-sm text-gray-500">{member.email}</p>
+                                        <p className="text-sm text-gray-500">{member.role}</p>
                                     </div>
                                 </div>
                             )}
@@ -151,7 +160,7 @@ const TeamManagement: React.FC = () => {
                                 ) : (
                                     <>
                                         <button onClick={() => setEditingMember(member)} className="text-blue-500 hover:text-blue-700">Düzenle</button>
-                                        <button onClick={() => handleDeleteClick(member)} className="text-red-500 hover:text-red-700 disabled:text-gray-400 dark:disabled:text-gray-500 disabled:cursor-not-allowed" disabled={member.id === currentUser?.id}>Sil</button>
+                                        <button onClick={() => handleDeleteClick(member)} className="text-red-500 hover:text-red-700 disabled:text-gray-400 disabled:cursor-not-allowed" disabled={member.id === currentUser?.id}>Sil</button>
                                     </>
                                 )}
                             </div>
@@ -160,14 +169,15 @@ const TeamManagement: React.FC = () => {
                 </ul>
             </div>
             <div>
-                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Yeni Üye Ekle</h3>
-                <form onSubmit={handleAddMember} className="mt-4 flex flex-col sm:flex-row gap-4">
-                    <input type="text" placeholder="İsim" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} className="flex-grow px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800" />
-                    <input type="email" placeholder="E-posta" value={newMemberEmail} onChange={(e) => setNewMemberEmail(e.target.value)} className="flex-grow px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800" />
+                <h3 className="text-lg font-medium text-gray-800">Yeni Üye Ekle</h3>
+                <form onSubmit={handleAddMember} className="mt-4 flex flex-col sm:flex-row gap-4 flex-wrap items-start">
+                    <input type="text" placeholder="İsim" value={newMemberName} onChange={(e) => setNewMemberName(e.target.value)} className="flex-grow px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+                    <input type="email" placeholder="E-posta" value={newMemberEmail} onChange={(e) => setNewMemberEmail(e.target.value)} className="flex-grow px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
+                    <input type="password" placeholder="Şifre" value={newMemberPassword} onChange={(e) => setNewMemberPassword(e.target.value)} className="flex-grow px-3 py-2 border border-gray-300 rounded-md bg-gray-50" />
                     <select
                         value={newMemberRole}
                         onChange={(e) => setNewMemberRole(e.target.value as MemberRole)}
-                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
+                        className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                     >
                         <option value={MemberRole.MEMBER}>Üye</option>
                         <option value={MemberRole.ADMIN}>Yönetici</option>
@@ -190,25 +200,25 @@ const BoardSettings: React.FC = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">Sütun İsimleri</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Panonuzdaki sütunların adlarını özelleştirin.</p>
+                <h3 className="text-lg font-medium text-gray-800">Sütun İsimleri</h3>
+                <p className="text-sm text-gray-500">Panonuzdaki sütunların adlarını özelleştirin.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     {AllTaskStatuses.map(status => (
                         <div key={status}>
-                            <label htmlFor={`col-${status}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300">{status}</label>
+                            <label htmlFor={`col-${status}`} className="block text-sm font-medium text-gray-700">{status}</label>
                             <input
                                 id={`col-${status}`}
                                 type="text"
                                 value={localNames[status]}
                                 onChange={(e) => setLocalNames(prev => ({ ...prev, [status]: e.target.value }))}
-                                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800"
+                                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                             />
                         </div>
                     ))}
                 </div>
             </div>
             
-            <div className="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex justify-end pt-6 border-t border-gray-200">
                 <button onClick={handleSaveSettings} className="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700">Ayarları Kaydet</button>
             </div>
         </div>
@@ -233,9 +243,9 @@ const DataManagement: React.FC<{onClose: () => void}> = ({onClose}) => {
     };
 
     return (
-        <div className="p-4 border border-red-300 dark:border-red-700 rounded-lg">
-            <h3 className="text-lg font-medium text-red-700 dark:text-red-300">Tehlikeli Bölge</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Bu işlemler geri alınamaz. Lütfen dikkatli olun.</p>
+        <div className="p-4 border border-red-300 rounded-lg">
+            <h3 className="text-lg font-medium text-red-700">Tehlikeli Bölge</h3>
+            <p className="text-sm text-gray-500 mt-1">Bu işlemler geri alınamaz. Lütfen dikkatli olun.</p>
             <div className="mt-4 flex flex-col md:flex-row gap-4">
                 <button onClick={handleClearTasks} className="px-4 py-2 w-full text-white bg-red-600 rounded-md hover:bg-red-700">Tüm Görevleri Temizle</button>
                 <button onClick={handleResetBoard} className="px-4 py-2 w-full text-white bg-red-800 rounded-md hover:bg-red-900">Panoyu Varsayılana Sıfırla</button>
@@ -253,15 +263,15 @@ const Dashboard: React.FC = () => {
 
     return (
          <div>
-            <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4">Pano Genel Bakışı</h3>
+            <h3 className="text-lg font-medium text-gray-800 mb-4">Pano Genel Bakışı</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+                <div className="p-4 bg-white rounded-lg border border-gray-200">
                     <p className="text-3xl font-bold">{tasks.length}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Toplam Görev</p>
+                    <p className="text-sm text-gray-500">Toplam Görev</p>
                 </div>
-                <div className="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
+                <div className="p-4 bg-white rounded-lg border border-gray-200">
                     <p className="text-3xl font-bold">{members.length}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Takım Üyeleri</p>
+                    <p className="text-sm text-gray-500">Takım Üyeleri</p>
                 </div>
             </div>
              <div className="mt-6">
@@ -270,10 +280,10 @@ const Dashboard: React.FC = () => {
                      {AllTaskStatuses.map(status => (
                          <div key={status}>
                              <div className="flex justify-between mb-1">
-                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{columnNames[status]}</span>
-                                 <span className="text-sm font-medium text-gray-500 dark:text-gray-400">{tasksByStatus[status]}</span>
+                                 <span className="text-sm font-medium text-gray-700">{columnNames[status]}</span>
+                                 <span className="text-sm font-medium text-gray-500">{tasksByStatus[status]}</span>
                              </div>
-                             <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-2.5">
+                             <div className="w-full bg-gray-200 rounded-full h-2.5">
                                  <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: tasks.length > 0 ? `${(tasksByStatus[status] / tasks.length) * 100}%` : '0%' }}></div>
                              </div>
                          </div>
@@ -307,13 +317,13 @@ const AdminPanelModal: React.FC<AdminPanelModalProps> = ({ onClose }) => {
     return (
         <Modal isOpen onClose={onClose} title="Yönetici Paneli" className="max-w-4xl">
             <div className="flex flex-col md:flex-row gap-8">
-                <aside className="-ml-6 -mt-6 md:border-r border-b md:border-b-0 border-gray-200 dark:border-gray-700 p-6 md:w-1/4">
+                <aside className="-ml-6 -mt-6 md:border-r border-b md:border-b-0 border-gray-200 p-6 md:w-1/4">
                     <nav className="flex md:flex-col gap-2">
                         {tabs.map(tab => (
                              <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`px-4 py-2 text-sm font-medium rounded-md text-left w-full ${activeTab === tab.id ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200' : 'hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                                className={`px-4 py-2 text-sm font-medium rounded-md text-left w-full ${activeTab === tab.id ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100'}`}
                              >
                                 {tab.label}
                             </button>

@@ -1,15 +1,11 @@
 import { Member, Task, TaskStatus, MemberRole, TaskPriority } from './types';
 
 export const TEAM_MEMBERS_SEED: Omit<Member, 'id' | 'createdAt' | 'updatedAt'>[] = [
-  { name: 'Ayşe Yılmaz', email: 'ayse.y@example.com', role: MemberRole.ADMIN, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d' },
-  { name: 'Burak Kaya', email: 'burak.k@example.com', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026705d' },
-  { name: 'Can Demir', email: 'can.d@example.com', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026706d' },
-  { name: 'Deniz Arslan', email: 'deniz.a@example.com', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026707d' },
-  { name: 'Emre Şahin', email: 'emre.s@example.com', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026708d' },
-  { name: 'Fatma Çelik', email: 'fatma.c@example.com', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026709d' },
+  { name: 'Erhan Avcı', email: 'erhan.avci@thf.org.tr', role: MemberRole.ADMIN, avatarUrl: 'https://i.pravatar.cc/150?u=erhan.avci@thf.org.tr', password: 'password123' },
+  { name: 'Berke Özkan', email: 'berke.ozkan@thf.org.tr', role: MemberRole.MEMBER, avatarUrl: 'https://i.pravatar.cc/150?u=berke.ozkan@thf.org.tr', password: 'password123' },
 ];
 
-export const TASKS_SEED: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'responsibleId' | 'assigneeIds' | 'updatedBy'>[] = [
+export const TASKS_SEED: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'responsibleId' | 'assigneeIds' | 'updatedBy' | 'creatorId'>[] = [
     {
         title: 'Yeni açılış sayfası tasarla',
         description: 'Ana açılış sayfası için modern ve duyarlı bir tasarım oluşturun.',
@@ -19,6 +15,7 @@ export const TASKS_SEED: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'responsi
         attachments: [],
         voiceNotes: [],
         notes: [],
+        isArchived: false,
     },
     {
         title: 'Kullanıcı doğrulama API\'si geliştir',
@@ -29,6 +26,7 @@ export const TASKS_SEED: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'responsi
         attachments: [],
         voiceNotes: [],
         notes: [],
+        isArchived: false,
     },
     {
         title: 'Sürükle-bırak özelliğini uygula',
@@ -39,6 +37,7 @@ export const TASKS_SEED: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'responsi
         attachments: [],
         voiceNotes: [],
         notes: [],
+        isArchived: false,
     },
     {
         title: 'Mobil düzen hatalarını düzelt',
@@ -49,6 +48,7 @@ export const TASKS_SEED: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'responsi
         attachments: [],
         voiceNotes: [],
         notes: [],
+        isArchived: false,
     },
     {
         title: 'Test ortamını dağıtıma al',
@@ -59,12 +59,14 @@ export const TASKS_SEED: Omit<Task, 'id' | 'createdAt' | 'updatedAt' | 'responsi
         attachments: [],
         voiceNotes: [],
         notes: [],
+        isArchived: false,
+        completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     },
 ];
 
 export const DB_CONFIG = {
   DB_NAME: 'KanbanFlowDB',
-  DB_VERSION: 3,
+  DB_VERSION: 4,
   STORES: {
     TASKS: 'tasks',
     MEMBERS: 'members',
@@ -72,6 +74,7 @@ export const DB_CONFIG = {
     VOICE_NOTES: 'voice_notes',
     CONFIG: 'config',
     AVATARS: 'avatars',
+    NOTIFICATIONS: 'notifications',
   },
 };
 

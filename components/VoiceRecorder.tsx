@@ -160,7 +160,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ currentVoiceNotes, newVoi
   return (
     <div>
       <audio ref={audioPlayerRef} style={{ display: 'none' }} />
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Sesli Notlar</label>
+      <label className="block text-sm font-medium text-gray-700">Sesli Notlar</label>
       <div className="mt-1 flex items-center gap-4">
         <button
           type="button"
@@ -175,7 +175,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ currentVoiceNotes, newVoi
       {(currentVoiceNotes.length > 0 || newVoiceNotes.length > 0) && (
         <ul className="mt-4 space-y-2">
            {currentVoiceNotes.map(note => (
-            <li key={note.id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
+            <li key={note.id} className="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
                 <div className="flex items-center gap-2">
                     <button type="button" onClick={() => playCurrentVoiceNote(note)} className="text-blue-500">
                       {playingNoteId === note.id ? <PauseIcon className="w-5 h-5"/> : <PlayIcon className="w-5 h-5"/>}
@@ -189,7 +189,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ currentVoiceNotes, newVoi
             </li>
           ))}
           {newVoiceNotes.map((note, index) => (
-            <li key={note.id} className="flex items-center justify-between p-2 bg-blue-50 dark:bg-blue-900/50 rounded">
+            <li key={note.id} className="flex items-center justify-between p-2 bg-blue-50 rounded">
                  <div className="flex items-center gap-2">
                     <button type="button" onClick={() => playBlob(note.blob, note.id)} className="text-blue-500">
                       {playingNoteId === note.id ? <PauseIcon className="w-5 h-5"/> : <PlayIcon className="w-5 h-5"/>}
